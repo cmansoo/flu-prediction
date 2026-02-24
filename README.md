@@ -23,6 +23,26 @@ Definition of ILI: ILI is defined as fever (temperature of 100°F [37.8°C] or g
 The fluview endpoint provides two percentage metrics: ili (unweighted) and wili (weighted).
 - Unweighted (`ili`): Calculated simply as the number of ILI cases divided by the total number of patients seen.
 - Weighted (`wili`): To produce a representative estimate for larger regions (like National or HHS Regions), the CDC weights the state-level data by state population. This corrects for the fact that some states may have higher provider participation rates than others relative to their actual population.
+- `epiweeks`: Epiweeks (Epidemiological Weeks) use the U.S. CDC definition. That is, the first epiweek each year is the week, starting on a Sunday, that contains January 4. Format: YYYYWW
+
+YYYY: Four-digit year
+WW: Two-digit week (01-53)
+
+- `lag`: # weeks between each epiweek and its issue
+- `regions`: list of region labels: nat, states, hhs1-hhs10, cen1-cen9 (See [geographic codes](https://cmu-delphi.github.io/delphi-epidata/api/geographic_codes.html#us-regions-and-states))
+- `issue`: epiweek of publication (int)
+- `num_ili`: number of ILI cases (integer)
+- `num_patients`: total number of patients (int)
+- `num_providers`: number of reporting providers (int)
+- `num_age_0`: number of ILI cases for ages 0-4 (int)
+- `num_age_1`: number of ILI cases for ages 5-24 (int)
+- `num_age_2`: number of ILI cases for ages 25-49 (int)
+- `num_age_3`: number of ILI cases for ages 50-64 (int)
+- `num_age_4`: number of ILI cases for ages 65+ (int)
+- `num_age_5`: number of ILI cases with unknown age (int)
+- `wili`: weighted percent influenza-like illness
+- `ili`: percent influenza-like illness
+
 
 <!-- - **CDC FluSight Forecast Hub**: Historical truth data and benchmark forecasts ([GitHub link](https://github.com/cdcepi/Flusight-forecast-data))
 - Additional features (optional): environmental data, mobility data, seasonal indicators.
@@ -56,7 +76,7 @@ OData v4 is standardized for RESTful querying and is fully supported by Python. 
 ---
 
 
-
+<!-- 
 ## Project Structure
 ```
 Flu_prediction/
@@ -82,9 +102,9 @@ Flu_prediction/
 ├── .gitignore         # Ignore venv, data, models
 ├── requirements.txt   # Python dependencies
 └── README.md          # Project overview and instructions
-```
+``` -->
 
----
+<!-- ---
 
 ## Getting Started
 
@@ -104,4 +124,4 @@ python -m venv venv
 3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
-```
+``` -->

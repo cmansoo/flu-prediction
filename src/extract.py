@@ -1,46 +1,67 @@
 import requests
 import pandas as pd
 
-def extract_fluview(regions, start_epiweek, end_epiweek):
+VALID_ENDPOINTS = {"fluview", "fluview_clinical", "flusurv", "fluview_meta"}
+ENDPOINT_MAIN_PARAM = {
+    "fluview": "regions",
+    "fluview_clinical": "regions",
+    "flusurv": "locations",
+    "fluview_meta": None
+}
+
+def fetch_epidata(endpoint, start_week, end_week, **kwargs):
     """
-    Extracts FluView data using Delphi Epidata API for specified regions and epiweeks.
-    
-    :param regions (str or list): List of regions to query (e.g., ["nat", "NY", "CA"])
-    :param start_epiweek (int): start epiweek in the format YYYYWW (e.g., 202001 for the first week of 2020)
-    :param end_epiweek (int): end epiweek in the format YYYYWW (e.g., 202052 for the last week of 2020)
-    
-    Returns: 
-        a pd.DataFrame
+    Fetch epidata using Delphi Epidata API. Returns a pandas DataFrame.
+
+    Parameters:
+    - endpoint: str, one of "fluview", "fluview_clinical", "flusurv", "fluview_meta"
+    - start_week: str, in format "YYYYWW" (e.g. "202001" for the first week of 2020)
+    - end_week: str, in format "YYYYWW" (e.g. "202052" for the last week of 2020)
+    - Main parameter (required for all endpoints except fluview_meta):
+        fluview / fluview_clinical → regions="nat"
+        flusurv → locations="nat"
+        - Additional parameters can be passed as keyword arguments (e.g. `issues`, `lag`, `auth`)
+
     """
-    # Delphi Epidata API endpoint
-    url = "https://api.delphi.cmu.edu/epidata/fluview/"
+    
+    if endpoint not in VALID_ENDPOINTS:
+        raise ValueError(f"Invalid endpoint: {endpoint}. Valid options are: {VALID_ENDPOINTS}")
+        
+    url = f"https://api.delphi.cmu.edu/epidata/{endpoint}/"
+    params = {}
 
-    if isinstance(regions, list):
-        regions = ",".join(regions)
+    # epiweek validation
+    if endpoint != "fluview_meta" and (start_week is None or end_week is None):
+        raise ValueError("start_week and end_week are required for this endpoint.")
+    
+    params["epiweeks"] = f"{start_week}-{end_week}"
+    
+    # validate main parameter
+    main_param = ENDPOINT_MAIN_PARAM[endpoint]
+    if main_param is not None:
+        if main_param not in kwargs.keys():
+            raise ValueError(f"Missing required parameter: {main_param} for endpoint {endpoint}.")
+        params[main_param] = kwargs[main_param]
 
-    # query parameters
-    params = {
-        "regions": regions,
-        "epiweeks": f"{start_epiweek}-{end_epiweek}",
-        "format": "json"
-    }
-
+    # add addional parameters if provided    
+    params.update(kwargs)
+    
     response = requests.get(url, params=params)
-    if response.status_code == 200: # status OK
-        data = response.json()
+    if response.status_code == 200:
+        data = response.json().get("epidata", [])
+        return pd.DataFrame(data)
     else:
-        raise Exception(f"API request failed with status code {response.status_code}: {response.text}")
+        print(f"Error fetching data: {response.status_code}. Response: {response.text}")
+        return pd.DataFrame()
+    
 
-    return pd.DataFrame(data)
-
-def main():
-    # Example usage
-    regions = ["nat", "NY", "CA"]
-    start_epiweek = 202001
-    end_epiweek = 202052
-
-    fluview_data = extract_fluview(regions, start_epiweek, end_epiweek)
-    print(fluview_data)
-
+# example usage
 if __name__ == "__main__":
-    main()
+    df = fetch_epidata(
+        endpoint="fluview",
+        start_week="202001",
+        end_week="202052",
+        regions="nat"
+    )
+    display(df.head())
+
