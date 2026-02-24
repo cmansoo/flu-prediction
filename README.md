@@ -10,7 +10,7 @@ This project demonstrates application of Python and machine learning algorithms 
 ## Data Source
 - **CDC FluSurv-NET**: Weekly influenza hospitalization counts ([link](https://www.cdc.gov/fluview/overview/influenza-hospitalization-surveillance.html)). The data canbe accessed by [Delphi Epidata API](https://cmu-delphi.github.io/delphi-epidata/api/fluview.html). 
 
-**Flusurv** Database contains 4 datasets:
+**Epidata** Database contains 4 datasets:
 - fluview
 - fluview metadata
 - fluview clinical
@@ -23,11 +23,7 @@ Definition of ILI: ILI is defined as fever (temperature of 100°F [37.8°C] or g
 The fluview endpoint provides two percentage metrics: ili (unweighted) and wili (weighted).
 - Unweighted (`ili`): Calculated simply as the number of ILI cases divided by the total number of patients seen.
 - Weighted (`wili`): To produce a representative estimate for larger regions (like National or HHS Regions), the CDC weights the state-level data by state population. This corrects for the fact that some states may have higher provider participation rates than others relative to their actual population.
-- `epiweeks`: Epiweeks (Epidemiological Weeks) use the U.S. CDC definition. That is, the first epiweek each year is the week, starting on a Sunday, that contains January 4. Format: YYYYWW
-
-YYYY: Four-digit year
-WW: Two-digit week (01-53)
-
+- `epiweeks`: Epiweeks (Epidemiological Weeks) use the U.S. CDC definition. That is, the first epiweek each year is the week, starting on a Sunday, that contains January 4. Format: YYYYWW, where YYYY: Four-digit year; WW: Two-digit week (01-53)
 - `lag`: # weeks between each epiweek and its issue
 - `regions`: list of region labels: nat, states, hhs1-hhs10, cen1-cen9 (See [geographic codes](https://cmu-delphi.github.io/delphi-epidata/api/geographic_codes.html#us-regions-and-states))
 - `issue`: epiweek of publication (int)
@@ -44,6 +40,57 @@ WW: Two-digit week (01-53)
 - `ili`: percent influenza-like illness
 
 
+
+## Notes on Regions/Locations
+FluSurv data has only several sites [
+    "CA", "CO", "CT", "GA", "IA", "ID", "MD", "MI", "MN",
+    "NM", "OH", "OK", "OR", "RI", "SD", "TN",
+    "NY_albany", "NY_rochester", "UT"
+]
+
+Whereas Fluview data has sites all across nation. In this demo we will attempt to merge data on available Flusurv sites only.
+
+## Merging FluView and FluSurv Data
+
+Since FluView and FluSurv use different location codes, we cannot directly merge city-level data. For example:
+
+| City          | FluSurv code   | FluView code   |
+|---------------|---------------|----------------|
+| Albany, NY    | NY_albany     | Albany_NY      |
+| Rochester, NY | NY_rochester  | Rochester_NY   |
+| California    | CA            | CA             |
+| Colorado      | CO            | CO             |
+| Connecticut   | CT            | CT             |
+| Georgia       | GA            | GA             |
+| Iowa          | IA            | IA             |
+| Idaho         | ID            | ID             |
+| Maryland      | MD            | MD             |
+| Michigan      | MI            | MI             |
+| Minnesota     | MN            | MN             |
+| New Mexico    | NM            | NM             |
+| Ohio          | OH            | OH             |
+| Oklahoma      | OK            | OK             |
+| Oregon        | OR            | OR             |
+| Rhode Island  | RI            | RI             |
+| South Dakota  | SD            | SD             |
+| Tennessee     | TN            | TN             |
+| Utah          | UT            | UT             |
+
+To align the datasets:
+
+Map FluSurv locations to FluView codes using a mapping table.
+State-level locations (e.g., CA, CO) remain unchanged.
+
+```
+FLUSURV_TO_FLUVIEW = {
+    "NY_albany": "Albany_NY",
+    "NY_rochester": "Rochester_NY"
+}
+```
+
+Fetch FluView, FluView Clinical, and FluSurv data for all mapped locations.
+
+Merge datasets on epiweek + region to create a unified dataset for analysis.
 <!-- - **CDC FluSight Forecast Hub**: Historical truth data and benchmark forecasts ([GitHub link](https://github.com/cdcepi/Flusight-forecast-data))
 - Additional features (optional): environmental data, mobility data, seasonal indicators.
 - (Option 1, CDC SODA API) https://dev.socrata.com/ - use the API v4
