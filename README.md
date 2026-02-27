@@ -151,15 +151,15 @@ Flu_prediction/
 └── README.md          # Project overview and instructions
 ``` -->
 
-<!-- ---
+---
 
 ## Getting Started
 
 1. **Clone the repo**:
 
 ```bash
-git clone https://github.com/yourusername/influenza-forecasting-pipeline.git
-cd influenza-forecasting-pipeline
+git clone https://github.com/cmansoo/flu-prediction.git
+cd flu-prediction
 ```
 2. **Create Virtual Environment**
 
@@ -171,4 +171,4 @@ python -m venv venv
 3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
-``` -->
+```
